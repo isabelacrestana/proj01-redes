@@ -1,5 +1,7 @@
 import socket
 import threading
+import psutil
+import time
 from datetime import datetime
 
 monitores_ativos = {}   #chave uma tupla(client_socket, monitor_id) -> {"tipo": "CPU"/"Memória", "ativo": True, "thread": thread, "intervalo": intervalo}. Um dicionário para armazenar os monitores ativos, sendo os dados desses monitores guardados em dicionarios também só que internos 
@@ -9,10 +11,28 @@ lock_clientes = threading.Lock()  #para garantir acesso exclusivo ao contador de
 max_clientes = 3  #número máximo de clientes simultâneos
 
 def monitor_cpu(client_socket, intervalo, monitor_id):
-    pass
+    #primeira leitura descartada para não mostrar uso 0%
+    psutil.cpu_percent(interval=None)  # descarta a primeira leitura
+    time.sleep(intervalo)  # espera o intervalo antes de começar a enviar dados
+    while True:
+        with lock:
+            if not monitores_ativos.get((client_socket, monitor_id), {}).get("ativo", False):
+                break
+        uso_cpu = psutil.cpu_percent(interval=None)
+        client_socket.sendall(f"[ID {monitor_id}] [{datetime.now().strftime('%H:%M:%S')}] CPU: {uso_cpu}%\n".encode())
+        time.sleep(intervalo)
 
 def monitor_memoria(client_socket, intervalo, monitor_id):
-    pass
+    #primeira leitura descartada para ficar coerente com o monitoramento de CPU
+    psutil.virtual_memory().percent  # descarta a primeira leitura
+    time.sleep(intervalo)  # espera o intervalo antes de começar a enviar dados
+    while True:
+        with lock:
+            if not monitores_ativos.get((client_socket, monitor_id), {}).get("ativo", False):
+                break
+        mem = psutil.virtual_memory().percent #porcentagem de uso da memória
+        client_socket.sendall(f"[ID {monitor_id}] [{datetime.now().strftime('%H:%M:%S')}] Memória: {mem}%\n".encode())
+        time.sleep(intervalo)
 
 def handle_client(client_socket, addr):
     global clientes_ativos  #variável global para contar clientes ativos
