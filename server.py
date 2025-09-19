@@ -112,17 +112,12 @@ def handle_client(client_socket, addr):
                     client_socket.sendall("Comando inválido. Use quit-<ID>\n".encode())
             #comando para encerrar todos os monitores e sair
             elif request.lower() == "exit":
-                client_socket.sendall("Encerrando todos os monitores...\n".encode())
-                with lock:
-                    for (cs, mid), info in monitores_ativos.items():
-                        if cs == client_socket:
-                            info["ativo"] = False
-                for t in threads_monitor:
-                    t.join()    #espera as threads terminarem
                 break
             #comando inválido
             else:
                 client_socket.sendall("Comando inválido.\n".encode())
+    except: 
+        print(f"Erro com o cliente {addr}")
     #se der erro ou chegar no break usando exit, fecha a conexão
     finally:
         with lock:
