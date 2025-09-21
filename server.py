@@ -132,7 +132,6 @@ def handle_client(client_socket, addr):
         print(f"Conexão encerrada: {addr}")
 
 def start_server():
-    global clientes_ativos #variável global para contar clientes ativos
     server_ip="127.0.0.1"   #servidor localhost
     port=8000   #porta do servidor
     #criar o sobjeto socket
