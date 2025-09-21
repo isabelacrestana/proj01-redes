@@ -93,8 +93,8 @@ def handle_client(client_socket, addr):
                 for (cs, mid), info in monitores_ativos.items():
                     if cs == client_socket and info["ativo"]:
                         lista += f"ID {mid}: tipo={info['tipo']} intervalo={info['intervalo']}\n"  
-                    if lista == "":
-                        lista = "Nenhum monitor ativo.\n"
+                if lista == "":
+                    lista = "Nenhum monitor ativo.\n"
                 client_socket.sendall(f"Monitores ativos:\n{lista}\n".encode())
             #comando para encerrar monitor específico
             elif request.lower().startswith("quit-"):    #se o comando começa com quit-
@@ -134,7 +134,7 @@ def handle_client(client_socket, addr):
 def start_server():
     server_ip="127.0.0.1"   #servidor localhost
     port=8000   #porta do servidor
-    #criar o sobjeto socket
+    #criar o objeto socket
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  #primeiro argumento especifica que estamos usando ip do tipo ipv4 e o segundo que estamos usando o protocolo tcp
         server.bind((server_ip, port))  #vincula o servidor ao ip e porta especificos
